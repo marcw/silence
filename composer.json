@@ -1,6 +1,6 @@
 {
-    "name": "marcw/podcast",
-    "description": "Podcast management made simple for me",
+    "name": "marcw/silence",
+    "description": "Silence is a podcast static feed generator.",
     "type": "project",
     "require": {
         "marcw/rss-writer": "^0.4.0",
