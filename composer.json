@@ -1,0 +1,27 @@
+{
+    "name": "marcw/podcast",
+    "description": "Podcast management made simple for me",
+    "type": "project",
+    "require": {
+        "marcw/rss-writer": "^0.4.0",
+        "symfony/console": "^4.1",
+        "doctrine/orm": "^2.6",
+        "symfony/validator": "^4.1",
+        "symfony/yaml": "^4.1",
+        "symfony/property-access": "^4.1",
+        "symfony/form": "^4.1",
+        "symfony/finder": "^4.1"
+    },
+    "autoload": {
+      "psr-4" : {
+          "MarcW\\Podcast\\": "src"
+      }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marc Weistroff",
+            "email": "marc@weistroff.net"
+        }
+    ]
+}
