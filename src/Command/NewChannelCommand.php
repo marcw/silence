@@ -3,6 +3,7 @@
 
 namespace MarcW\Podcast\Command;
 
+use Doctrine\ORM\EntityManager;
 use MarcW\Podcast\Entity\Channel;
 use MarcW\RssWriter\Bridge\Symfony\Form\ChoiceList\Loader\ItunesCategoryChoiceLoader;
 use Symfony\Component\Console\Input\InputInterface;
