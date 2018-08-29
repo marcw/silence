@@ -18,8 +18,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
+/**
+ * @ORM\Entity()
+ * @ORM\Table()
+ */
 class Channel
 {
+    /**
+     * @ORM\Id()
+     * @ORM\Column(type="string", length=36, nullable=false)
+     */
+    private $id;
+
     /**
      * @var null|string
      * @ORM\Column(type="string", length=255, nullable=false)
@@ -52,7 +62,7 @@ class Channel
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="PodcastEpisode", mappedBy="channel")
+     * @ORM\OneToMany(targetEntity="Episode", mappedBy="channel")
      * @ORM\OrderBy({"createdAt"="DESC"})
      */
     private $episodes;
@@ -120,6 +130,7 @@ class Channel
     public function __construct()
     {
         $this->episodes = new ArrayCollection();
+        $this->id = Uuid::uuid4()->toString();
     }
 
     public function setTitle(string $title): void
@@ -247,6 +258,22 @@ class Channel
      */
     public function validate(ExecutionContextInterface $context)
     {
+        if ($this->artwork) {
+            list ($width, $height) = getimagesize($this->artwork);
+            if ($width < 1400) {
+                $context
+                    ->buildViolation('Image width should be at least 1400px')
+                    ->atPath('artwork')
+                    ->addViolation();
+
+            }
+
+            if ($height < 1400) {
+                $context->buildViolation('Image height should be at least 1400px')
+                    ->atPath('artwork')
+                    ->addViolation();
+            }
+        }
     }
 
     public function setLanguage(string $language): void

@@ -11,24 +11,27 @@
 declare(strict_types=1);
 
 namespace MarcW\Podcast\Entity;
+use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * PodcastEpisode.
- *
- * @author Marc Weistroff <marc@weistroff.net>
- *
- * @ORM\Entity(repositoryClass="AudienceHero\Bundle\PodcastBundle\Repository\PodcastEpisodeRepository")
- * @ORM\Table(name="ah_podcast_episode", indexes={@ORM\Index(columns={"slug"})})
+ * @ORM\Entity()
+ * @ORM\Table()
  */
 class Episode
 {
     /**
+     * @ORM\Id()
+     * @ORM\Column(type="string", length=36, nullable=false)
+     */
+    private $id;
+
+    /**
      * @var null|Channel
      * @ORM\ManyToOne(targetEntity="Channel", inversedBy="episodes")
-     * @ORM\JoinColumn(name="podcast_channel_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
+     * @ORM\JoinColumn(name="channel_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @Assert\NotNull
-     * @MaxDepth(1)
-     * @Groups({"read", "write"})
      */
     private $channel;
 
@@ -36,7 +39,6 @@ class Episode
      * @var null|string
      * @ORM\Column(type="string", length=255, nullable=false)
      * @Assert\Length(max=255)
-     * @Groups({"read", "write"})
      * @Assert\NotBlank
      */
     private $title;
@@ -44,8 +46,6 @@ class Episode
     /**
      * @var null|string
      * @ORM\Column(type="string", length=255, nullable=false)
-     * @Gedmo\Slug(unique=true, unique_base="channel", updatable=true, separator="-", fields={"title"})
-     * @Groups({"read"})
      */
     private $slug;
 
@@ -53,7 +53,6 @@ class Episode
      * @var null|string
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Length(max=255)
-     * @Groups({"read", "write"})
      */
     private $subtitle;
 
@@ -61,14 +60,12 @@ class Episode
      * @var null|string
      * @ORM\Column(type="string", length=4000, nullable=true)
      * @Assert\Length(max=4000)
-     * @Groups({"read", "write"})
      */
     private $description;
 
     /**
      * @var null|string
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"read", "write"})
      * @Assert\Length(max=255)
      */
     private $author;
@@ -76,47 +73,44 @@ class Episode
     /**
      * @var bool
      * @ORM\Column(type="boolean", nullable=false)
-     * @Groups({"read", "write"})
      */
     private $itunesBlock = false;
 
     /**
      * @var bool
      * @ORM\Column(type="boolean", nullable=false)
-     * @Groups({"read", "write"})
      */
     private $isExplicit = false;
 
     /**
-     * @var null|File
-     * @ORM\ManyToOne(targetEntity="AudienceHero\Bundle\FileBundle\Entity\File")
-     * @ORM\JoinColumn(name="artwork_id", referencedColumnName="id", onDelete="SET NULL", nullable=true)
-     * @Groups({"read", "write"})
+     * @var string
+     * @ORM\Column(type="boolean", nullable=false)
      */
     private $artwork;
 
     /**
      * @var null|string
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"read", "write"})
      */
     private $duration;
 
     /**
-     * @var null|File
-     * @ORM\ManyToOne(targetEntity="AudienceHero\Bundle\FileBundle\Entity\File")
-     * @ORM\JoinColumn(name="file_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @Assert\NotNull
-     * @Groups({"read", "write"})
+     * @var string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\NotBlank
      */
     private $file;
 
     /**
      * @var null|\DateTime
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"read", "write"})
      */
     private $publishedAt;
+
+    public function __construct()
+    {
+        $this->id = Uuid::uuid4()->toString();
+    }
 
     public function setTitle(string $title): void
     {
@@ -209,16 +203,6 @@ class Episode
         return $this->itunesBlock;
     }
 
-//    public function setArtwork(?File $artwork): void
-//    {
-//        $this->artwork = $artwork;
-//    }
-//
-//    public function getArtwork(): ?File
-//    {
-//        return $this->artwork;
-//    }
-
     public function getSlug(): ?string
     {
         return $this->slug;
@@ -237,5 +221,53 @@ class Episode
     public function getPublishedAt(): ?\DateTime
     {
         return $this->publishedAt;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFile(): string
+    {
+        return $this->file;
+    }
+
+    /**
+     * @param string $file
+     */
+    public function setFile(string $file): void
+    {
+        $this->file = $file;
+    }
+
+    /**
+     * @return string
+     */
+    public function getArtwork(): string
+    {
+        return $this->artwork;
+    }
+
+    /**
+     * @param string $artwork
+     */
+    public function setArtwork(string $artwork): void
+    {
+        $this->artwork = $artwork;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId(string $id): void
+    {
+        $this->id = $id;
     }
 }
