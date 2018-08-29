@@ -45,12 +45,6 @@ class Episode
 
     /**
      * @var null|string
-     * @ORM\Column(type="string", length=255, nullable=false)
-     */
-    private $slug;
-
-    /**
-     * @var null|string
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Length(max=255)
      */
@@ -142,16 +136,16 @@ class Episode
         return $this->channel;
     }
 
-//    public function setFile(File $file): void
-//    {
-//        $this->file = $file;
+    public function setFile(string $file): void
+    {
+        $this->file = $file;
 //        $this->setDuration(DurationConverter::toHumanReadable($file->getPublicMetadataValue('duration')));
-//    }
+    }
 
-//    public function getFile(): ?File
-//    {
-//        return $this->file;
-//    }
+    public function getFile(): ?string
+    {
+        return $this->file;
+    }
 
     public function setAuthor(string $author): void
     {
@@ -213,7 +207,7 @@ class Episode
         $this->slug = $slug;
     }
 
-    public function setPublishedAt(\DateTime $publishedAt): void
+    public function setPublishedAt(?\DateTime $publishedAt): void
     {
         $this->publishedAt = $publishedAt;
     }
@@ -226,23 +220,7 @@ class Episode
     /**
      * @return string
      */
-    public function getFile(): string
-    {
-        return $this->file;
-    }
-
-    /**
-     * @param string $file
-     */
-    public function setFile(string $file): void
-    {
-        $this->file = $file;
-    }
-
-    /**
-     * @return string
-     */
-    public function getArtwork(): string
+    public function getArtwork(): ?string
     {
         return $this->artwork;
     }

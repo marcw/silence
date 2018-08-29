@@ -4,12 +4,13 @@
 namespace MarcW\Podcast\Command;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use MarcW\Podcast\Entity\Channel;
 use MarcW\RssWriter\Bridge\Symfony\Form\ChoiceList\Loader\ItunesCategoryChoiceLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class NewChannelCommand extends AbstractCommand
+class ChannelCreateCommand extends ChannelCrudCommand
 {
     protected function configure()
     {
@@ -36,10 +37,15 @@ class NewChannelCommand extends AbstractCommand
 
             $choices = new ItunesCategoryChoiceLoader();
             $this->askForChoice('category', $choices->loadChoiceList()->getChoices());
+            $this->askForLanguage('language');
+            $this->askForImageFile('artwork');
             $this->askForBool('isExplicit');
             $this->askForBool('isComplete');
             $this->askForString('itunesOwnerEmail');
             $this->askForString('itunesOwnerName');
         } while (!$this->validateSubject());
+
+        $this->entityManager->persist($channel);
+        $this->entityManager->flush();
     }
 }

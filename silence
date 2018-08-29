@@ -4,11 +4,19 @@
 use MarcW\Podcast\Console\Application;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 require_once __DIR__.'/config/bootstrap.php';
 
 $application = new Application();
 
 $application->add(new \MarcW\Podcast\Command\GenerateCommand());
-$application->add(new \MarcW\Podcast\Command\NewChannelCommand());
+$application->add($container->get(\MarcW\Podcast\Command\ChannelCreateCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\ChannelListCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\ChannelShowCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\ChannelEditCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\EpisodeCreateCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\EpisodeListCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\EpisodeShowCommand::class));
+$application->add($container->get(\MarcW\Podcast\Command\EpisodeEditCommand::class));
 $application->run();

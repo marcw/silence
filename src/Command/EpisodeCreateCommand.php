@@ -9,7 +9,7 @@ use MarcW\RssWriter\Bridge\Symfony\Form\ChoiceList\Loader\ItunesCategoryChoiceLo
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class NewEpisodeCommand extends AbstractCommand
+class EpisodeCreateCommand extends EpisodeCrudCommand
 {
     protected function configure()
     {
@@ -26,17 +26,10 @@ class NewEpisodeCommand extends AbstractCommand
         $this->setOutput($output);
 
         do {
-            $this->askForString('title');
-            $this->askForString('subtitle');
-            $this->askForString('description');
-            $this->askForString('author');
-            $this->askForBool('itunesBlock');
-            $this->askForBool('isExplicit');
-            $this->askForString('copyright');
-            $this->askForString('duration');
-            $this->askForImageFile('artwork');
-            $this->askForAudioFile('file');
-            $this->askForString('publishedAt');
+            $this->ask();
         } while (!$this->validateSubject());
+
+        $this->entityManager->persist($episode);
+        $this->entityManager->flush();
     }
 }

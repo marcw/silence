@@ -15,6 +15,7 @@ namespace MarcW\Podcast\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -131,6 +132,11 @@ class Channel
     {
         $this->episodes = new ArrayCollection();
         $this->id = Uuid::uuid4()->toString();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
     }
 
     public function setTitle(string $title): void
@@ -289,7 +295,7 @@ class Channel
     /**
      * @return string
      */
-    public function getArtwork(): string
+    public function getArtwork(): ?string
     {
         return $this->artwork;
     }
@@ -300,5 +306,13 @@ class Channel
     public function setArtwork(string $artwork): void
     {
         $this->artwork = $artwork;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 }

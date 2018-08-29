@@ -96,6 +96,33 @@ abstract class AbstractCommand extends Command
         $pa->setValue($this->subject, $property, $value);
     }
 
+    protected function askForDatetime(string $property)
+    {
+        $helper = $this->getHelper('question');
+        $pa = PropertyAccess::createPropertyAccessor();
+
+        $default = $pa->getValue($this->getSubject(), $property);
+        if ($default instanceof \DateTime) {
+            $default = $default->format('Y-m-d H:i:s');
+        }
+        $question = new Question(ucfirst(Inflector::camelize($property)), $default);
+        $question->setNormalizer(function($value) {
+            if (!$value) {
+                return null;
+            }
+
+            try {
+                return new \DateTime($value);
+            } catch(\Exception $exception) {
+            }
+
+            return null;
+        });
+        $value = $helper->ask($this->getInput(), $this->getOutput(), $question);
+
+        $pa->setValue($this->subject, $property, $value);
+    }
+
     protected function askForChoice(string $property, array $choices)
     {
         $helper = $this->getHelper('question');
@@ -107,10 +134,11 @@ abstract class AbstractCommand extends Command
         $pa->setValue($this->subject, $property, $value);
     }
 
+
     protected function askForLanguage(string $property)
     {
         $languages = json_decode(file_get_contents(__DIR__.'/../Resources/language.json'), true);
-        $this->askForChoice($property, array_values($languages));
+        $this->askForChoice($property, array_combine(array_values($languages), array_values($languages)));
     }
 
     protected function askForAudioFile(string $property)
@@ -126,7 +154,8 @@ abstract class AbstractCommand extends Command
             $files[] = $file->getPathname();
         }
 
-        return $files;
+        $files = array_combine(array_values($files), array_values($files));
+        $this->askForChoice($property, $files);
     }
 
     protected function askForImageFile(string $property)
@@ -144,7 +173,8 @@ abstract class AbstractCommand extends Command
             $files[] = $file->getPathname();
         }
 
-        return $files;
+        $files = array_combine(array_values($files), array_values($files));
+        $this->askForChoice($property, $files);
     }
 
     protected function validateSubject(): bool
