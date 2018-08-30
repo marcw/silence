@@ -1,7 +1,7 @@
 <?php
 
 
-namespace MarcW\Podcast\Command;
+namespace MarcW\Silence\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

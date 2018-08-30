@@ -1,14 +1,16 @@
 <?php
 
 
-namespace MarcW\Podcast\Command;
+namespace MarcW\Silence\Command;
 
 
 use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ORM\EntityManagerInterface;
-use MarcW\Podcast\Entity\Channel;
+use MarcW\Silence\Console\Question\ChannelQuestion;
+use MarcW\Silence\Entity\Channel;
 use MarcW\RssWriter\Bridge\Symfony\Form\ChoiceList\Loader\ItunesCategoryChoiceLoader;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 abstract class EpisodeCrudCommand extends AbstractCommand
@@ -18,56 +20,32 @@ abstract class EpisodeCrudCommand extends AbstractCommand
      */
     protected $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
     {
         $this->entityManager = $entityManager;
 
-        parent::__construct();
+        parent::__construct($parameterBag);
     }
 
     protected function ask()
     {
         $this->askForChannel('channel');
-        $this->askForString('title');
-        $this->askForString('subtitle');
-        $this->askForString('description');
-        $this->askForString('author');
-        $this->askForBool('itunesBlock');
-        $this->askForBool('isExplicit');
+        $this->askForString('Title', 'title');
+        $this->askForString('Subtitle', 'subtitle');
+        $this->askForString('Description', 'description');
+        $this->askForString('Author', 'author');
+        $this->askForBool('Block this episode from appearing on iTunes', 'itunesBlock');
+        $this->askForBool('This episode has explicit language', 'isExplicit');
         $this->askForAudioFile('file');
         $this->askForImageFile('artwork');
-        $this->askForString('duration');
-        $this->askForDateTime('publishedAt');
+        $this->askForDateTime('Date and time of publciation (Y-m-d H:i:s)', 'publishedAt');
     }
 
     protected function askForChannel(string $property)
     {
-        $pa = PropertyAccess::createPropertyAccessor();
-        $channelRepository = $this->entityManager->getRepository(Channel::class);
-        $channels = $channelRepository->findAll();
+        $default = $this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new ChannelQuestion('Select the channel of this episode', $this->entityManager, $default));
 
-        $default = $pa->getValue($this->getSubject(), $property);
-        if ($default instanceof Channel) {
-            $default = $default->getId();
-        }
-
-        $choices = [];
-        foreach ($channels as $channel) {
-            $choices[$channel->getId()] = $channel;
-        }
-
-        $helper = $this->getHelper('question');
-
-        $question = new ChoiceQuestion(ucfirst(Inflector::camelize($property)), $choices, $default);
-        $question->setNormalizer(function($value) use ($channels) {
-            foreach ($channels as $channel) {
-                if ($value === $channel->__toString() || $value === $channel->getId()) {
-                    return $channel;
-                }
-            }
-        });
-        $value = $helper->ask($this->getInput(), $this->getOutput(), $question);
-
-        $pa->setValue($this->subject, $property, $choices[$value]);
+        $this->propertyAccessor->setValue($this->subject, $property, $this->entityManager->getRepository(Channel::class)->find($value));
     }
 }

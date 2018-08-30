@@ -1,11 +1,11 @@
 <?php
 
 
-namespace MarcW\Podcast\Command;
+namespace MarcW\Silence\Command;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use MarcW\Podcast\Entity\Channel;
+use MarcW\Silence\Entity\Channel;
 use MarcW\RssWriter\Bridge\Symfony\Form\ChoiceList\Loader\ItunesCategoryChoiceLoader;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

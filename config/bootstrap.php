@@ -4,20 +4,23 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
-use MarcW\Podcast\Command\ChannelCreateCommand;
-use MarcW\Podcast\Command\ChannelEditCommand;
-use MarcW\Podcast\Command\ChannelListCommand;
-use MarcW\Podcast\Command\ChannelShowCommand;
-use MarcW\Podcast\Command\EpisodeCreateCommand;
-use MarcW\Podcast\Command\EpisodeEditCommand;
-use MarcW\Podcast\Command\EpisodeListCommand;
-use MarcW\Podcast\Command\EpisodeShowCommand;
+use MarcW\Silence\Command\ChannelCreateCommand;
+use MarcW\Silence\Command\ChannelEditCommand;
+use MarcW\Silence\Command\ChannelListCommand;
+use MarcW\Silence\Command\ChannelShowCommand;
+use MarcW\Silence\Command\EpisodeCreateCommand;
+use MarcW\Silence\Command\EpisodeEditCommand;
+use MarcW\Silence\Command\EpisodeListCommand;
+use MarcW\Silence\Command\EpisodeShowCommand;
+use MarcW\Silence\EventListener\AudioDurationEventListener;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 $loader = require __DIR__.'/../vendor/autoload.php';
 
 $container = new ContainerBuilder();
 
+// Configure the database
 $dbParams = [
     'driver'   => 'pdo_sqlite',
     'path' => __DIR__.'/../private/db.sqlite',
@@ -27,8 +30,11 @@ AnnotationRegistry::registerLoader([$loader, 'loadClass']);
 $config = Setup::createAnnotationMetadataConfiguration([__DIR__.'/../src/Entity'], true, null, null, false);
 $entityManager = EntityManager::create($dbParams, $config);
 
-$container->register('entity_manager', EntityManagerInterface::class)->setSynthetic(true);
+// Configure the container
+$container->register('entity_manager', EntityManagerInterface::class)->setSynthetic(true)->setPublic(true);
+$container->register('parameter_bag', ParameterBagInterface::class)->setSynthetic(true)->setPublic(true);
 $container->setAlias(EntityManagerInterface::class, 'entity_manager');
+$container->setAlias(ParameterBagInterface::class, 'parameter_bag');
 $container->register(ChannelCreateCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(ChannelEditCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(ChannelListCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
@@ -37,5 +43,15 @@ $container->register(EpisodeCreateCommand::class)->setAutoconfigured(true)->setA
 $container->register(EpisodeEditCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(EpisodeListCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(EpisodeShowCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
+$container->register(AudioDurationEventListener::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
+
+$container->setParameter('dir.root', realpath(__DIR__ . '/../'));
+$container->setParameter('dir.public', realpath(__DIR__ . '/../public'));
+$container->setParameter('dir.private', realpath(__DIR__.'/../private'));
+
+
+// Compile the container
 $container->compile();
 $container->set('entity_manager', $entityManager);
+$container->set('parameter_bag', $container->getParameterBag());
+$entityManager->getEventManager()->addEventSubscriber($container->get(AudioDurationEventListener::class));

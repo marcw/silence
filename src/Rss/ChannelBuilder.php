@@ -10,11 +10,11 @@
  */
 declare(strict_types=1);
 
-namespace MarcW\Podcast\Rss;
+namespace MarcW\Silence\Rss;
 
 use Doctrine\Common\Collections\Collection;
-use MarcW\Podcast\Entity\Channel;
-use MarcW\Podcast\Entity\Episode;
+use MarcW\Silence\Entity\Channel;
+use MarcW\Silence\Entity\Episode;
 use MarcW\RssWriter\Extension\Atom\AtomLink;
 use MarcW\RssWriter\Extension\Core\Channel as RssChannel;
 use MarcW\RssWriter\Extension\Core\Enclosure;

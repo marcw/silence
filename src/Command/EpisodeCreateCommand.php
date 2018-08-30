@@ -1,10 +1,10 @@
 <?php
 
 
-namespace MarcW\Podcast\Command;
+namespace MarcW\Silence\Command;
 
-use MarcW\Podcast\Entity\Channel;
-use MarcW\Podcast\Entity\Episode;
+use MarcW\Silence\Entity\Channel;
+use MarcW\Silence\Entity\Episode;
 use MarcW\RssWriter\Bridge\Symfony\Form\ChoiceList\Loader\ItunesCategoryChoiceLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

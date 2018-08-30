@@ -1,18 +1,23 @@
 <?php
 
 
-namespace MarcW\Podcast\Command;
+namespace MarcW\Silence\Command;
 
 use Doctrine\Common\Inflector\Inflector;
+use MarcW\Silence\Console\Question\ArtworkQuestion;
+use MarcW\Silence\Console\Question\BoolQuestion;
+use MarcW\Silence\Console\Question\DateTimeQuestion;
+use MarcW\Silence\Console\Question\LanguageQuestion;
+use MarcW\Silence\Console\Question\MediaQuestion;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\SymfonyQuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\ValidatorBuilder;
 
@@ -24,6 +29,20 @@ abstract class AbstractCommand extends Command
     protected $input;
     /** @var OutputInterface */
     protected $output;
+    /** @var \Symfony\Component\PropertyAccess\PropertyAccessor  */
+    protected $propertyAccessor;
+    /** @var SymfonyQuestionHelper  */
+    protected $questionHelper;
+    /** * @var ParameterBagInterface */
+    private $parameterBag;
+
+    public function __construct(ParameterBagInterface $parameterBag, ?string $name = null)
+    {
+        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $this->parameterBag = $parameterBag;
+
+        parent::__construct($name);
+    }
 
     /**
      * @return InputInterface
@@ -67,114 +86,61 @@ abstract class AbstractCommand extends Command
         return $this->subject;
     }
 
-    protected function askForString(string $property)
+    protected function askQuestion(Question $question)
     {
         $helper = $this->getHelper('question');
-        $pa = PropertyAccess::createPropertyAccessor();
 
-        $question = new Question(ucfirst(Inflector::camelize($property)), $this->sanitizeDefaultString($pa->getValue($this->getSubject(), $property)));
-        $value = $helper->ask($this->getInput(), $this->getOutput(), $question);
-
-        $pa->setValue($this->subject, $property, $value);
+        return $helper->ask($this->getInput(), $this->getOutput(), $question);
     }
 
-    protected function askForBool(string $property)
+    protected function askForString(string $question, string $property)
     {
-        $helper = $this->getHelper('question');
-        $pa = PropertyAccess::createPropertyAccessor();
-
-        $question = new ConfirmationQuestion(ucfirst(Inflector::camelize($property)), $pa->getValue($this->getSubject(), $property));
-        $question->setValidator(function($value) {
-            if (false !== $value && true !== $value) {
-                return false;
-            }
-
-            return true;
-        });
-        $value = $helper->ask($this->getInput(), $this->getOutput(), $question);
-
-        $pa->setValue($this->subject, $property, $value);
+        $default = $this->sanitizeDefaultString($this->propertyAccessor->getValue($this->getSubject(), $property));
+        $value = $this->askQuestion(new Question($question, $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
     }
 
-    protected function askForDatetime(string $property)
+    protected function askForBool(string $question, string $property)
     {
-        $helper = $this->getHelper('question');
-        $pa = PropertyAccess::createPropertyAccessor();
-
-        $default = $pa->getValue($this->getSubject(), $property);
-        if ($default instanceof \DateTime) {
-            $default = $default->format('Y-m-d H:i:s');
-        }
-        $question = new Question(ucfirst(Inflector::camelize($property)), $default);
-        $question->setNormalizer(function($value) {
-            if (!$value) {
-                return null;
-            }
-
-            try {
-                return new \DateTime($value);
-            } catch(\Exception $exception) {
-            }
-
-            return null;
-        });
-        $value = $helper->ask($this->getInput(), $this->getOutput(), $question);
-
-        $pa->setValue($this->subject, $property, $value);
+        $default = $this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new BoolQuestion($question, $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
     }
 
-    protected function askForChoice(string $property, array $choices)
+    protected function askForDatetime(string $question, string $property)
     {
-        $helper = $this->getHelper('question');
-        $pa = PropertyAccess::createPropertyAccessor();
+        $default = $this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new DateTimeQuestion($question, $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
+    }
 
-        $question = new ChoiceQuestion(ucfirst(Inflector::camelize($property)), $choices, $pa->getValue($this->getSubject(), $property));
-        $value = $helper->ask($this->getInput(), $this->getOutput(), $question);
-
-        $pa->setValue($this->subject, $property, $value);
+    protected function askForChoice(string $question, string $property, array $choices)
+    {
+        $default =$this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new ChoiceQuestion($question, $choices, $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
     }
 
 
     protected function askForLanguage(string $property)
     {
-        $languages = json_decode(file_get_contents(__DIR__.'/../Resources/language.json'), true);
-        $this->askForChoice($property, array_combine(array_values($languages), array_values($languages)));
+        $default = $this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new LanguageQuestion('In which language is this podcast?', $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
     }
 
     protected function askForAudioFile(string $property)
     {
-        $finder = new Finder();
-        $finder->files()
-            ->in(__DIR__.'/../../public/media')
-            ->name('*.mp3')
-        ;
-
-        $files = [];
-        foreach ($finder as $file) {
-            $files[] = $file->getPathname();
-        }
-
-        $files = array_combine(array_values($files), array_values($files));
-        $this->askForChoice($property, $files);
+        $default = $this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new MediaQuestion('Please provide the path to the Media file', $this->parameterBag->get('dir.public'), $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
     }
 
     protected function askForImageFile(string $property)
     {
-        $finder = new Finder();
-        $finder->files()
-               ->in(__DIR__.'/../../public/media')
-               ->name('*.png')
-               ->name('*.jpg')
-               ->name('*.jpeg')
-        ;
-
-        $files = [];
-        foreach ($finder as $file) {
-            $files[] = $file->getPathname();
-        }
-
-        $files = array_combine(array_values($files), array_values($files));
-        $this->askForChoice($property, $files);
+        $default = $this->propertyAccessor->getValue($this->getSubject(), $property);
+        $value = $this->askQuestion(new ArtworkQuestion('Please provide the path to the Artwork file (min 1400x1400)', $this->parameterBag->get('dir.public'), $default));
+        $this->propertyAccessor->setValue($this->subject, $property, $value);
     }
 
     protected function validateSubject(): bool

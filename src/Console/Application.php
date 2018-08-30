@@ -1,7 +1,7 @@
 <?php
 
 
-namespace MarcW\Podcast\Console;
+namespace MarcW\Silence\Console;
 
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Helper\DebugFormatterHelper;
