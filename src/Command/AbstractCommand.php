@@ -4,6 +4,7 @@
 namespace MarcW\Silence\Command;
 
 use Doctrine\Common\Inflector\Inflector;
+use Doctrine\ORM\EntityManagerInterface;
 use MarcW\Silence\Console\Question\ArtworkQuestion;
 use MarcW\Silence\Console\Question\BoolQuestion;
 use MarcW\Silence\Console\Question\DateTimeQuestion;
@@ -19,6 +20,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Validator\ConstraintViolationInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\ValidatorBuilder;
 
 abstract class AbstractCommand extends Command
@@ -33,15 +35,19 @@ abstract class AbstractCommand extends Command
     protected $propertyAccessor;
     /** @var SymfonyQuestionHelper  */
     protected $questionHelper;
-    /** * @var ParameterBagInterface */
+    /** @var ParameterBagInterface */
     protected $parameterBag;
+    /** @var EntityManagerInterface */
+    protected $entityManager;
 
-    public function __construct(ParameterBagInterface $parameterBag, ?string $name = null)
+    public function __construct(ParameterBagInterface $parameterBag, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
         $this->parameterBag = $parameterBag;
+        $this->validator = $validator;
+        $this->entityManager = $entityManager;
 
-        parent::__construct($name);
+        parent::__construct();
     }
 
     /**
@@ -145,11 +151,7 @@ abstract class AbstractCommand extends Command
 
     protected function validateSubject(): bool
     {
-        $builder = new ValidatorBuilder();
-        $builder->enableAnnotationMapping();
-        $validator = $builder->getValidator();
-
-        $list = $validator->validate($this->subject);
+        $list = $this->validator->validate($this->subject);
         if (0 === count($list)) {
             return true;
         }

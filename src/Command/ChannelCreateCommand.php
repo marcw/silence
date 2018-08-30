@@ -27,22 +27,7 @@ class ChannelCreateCommand extends ChannelCrudCommand
         $this->setOutput($output);
 
         do {
-            $this->askForString('title');
-            $this->askForString('subtitle');
-            $this->askForString('description');
-            $this->askForString('copyright');
-            $this->askForString('author');
-            $this->askForBool('itunesBlock');
-            $this->askForImageFile('artwork');
-
-            $choices = new ItunesCategoryChoiceLoader();
-            $this->askForChoice('category', $choices->loadChoiceList()->getChoices());
-            $this->askForLanguage('language');
-            $this->askForImageFile('artwork');
-            $this->askForBool('isExplicit');
-            $this->askForBool('isComplete');
-            $this->askForString('itunesOwnerEmail');
-            $this->askForString('itunesOwnerName');
+            $this->ask();
         } while (!$this->validateSubject());
 
         $this->entityManager->persist($channel);

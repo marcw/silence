@@ -90,11 +90,10 @@ class ChannelBuilder
             $item->setAuthor($episode->getAuthor());
             $enclosureUrl = $this->generateUrl($episode->getFile());
 
-            // TODO Populate file size and mime-type during File selection
             $item->setEnclosure((new Enclosure())
                  ->setUrl($enclosureUrl)
-                 ->setLength(filesize($this->getFilePath($episode->getFile())))
-                 ->setType('audio/mp3'))
+                 ->setLength($episode->getFilesize())
+                 ->setType($episode->getFiletype()))
             ;
 
             $item->setGuid((new Guid())->setIsPermaLink(true)->setGuid($item->getLink()));

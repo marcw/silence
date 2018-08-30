@@ -10,22 +10,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 abstract class ChannelCrudCommand extends AbstractCommand
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
-    {
-        $this->entityManager = $entityManager;
-
-        parent::__construct($parameterBag);
-    }
-
     protected function ask()
     {
         $this->askForString('Title', 'title');
         $this->askForString('Subtitle', 'subtitle');
+        $this->askForString('Link to the channel homepage', 'link');
         $this->askForString('Description', 'description');
         $this->askForString('Copyright', 'copyright');
         $this->askForString('Author', 'author');

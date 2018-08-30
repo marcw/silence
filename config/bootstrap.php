@@ -15,8 +15,16 @@ use MarcW\Silence\Command\EpisodeShowCommand;
 use MarcW\Silence\Command\RssGenerateCommand;
 use MarcW\Silence\EventListener\AudioFileEventListener;
 use MarcW\Silence\Rss\ChannelBuilder;
+use MarcW\Silence\Validator\ItunesArtworkValidator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Validator\ConstraintValidatorFactory;
+use Symfony\Component\Validator\ContainerConstraintValidatorFactory;
+use Symfony\Component\Validator\DependencyInjection\AddConstraintValidatorsPass;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\ValidatorBuilder;
+use Symfony\Component\Validator\ValidatorBuilderInterface;
 
 $loader = require __DIR__.'/../vendor/autoload.php';
 
@@ -37,6 +45,7 @@ $container->register('entity_manager', EntityManagerInterface::class)->setSynthe
 $container->register('parameter_bag', ParameterBagInterface::class)->setSynthetic(true)->setPublic(true);
 $container->setAlias(EntityManagerInterface::class, 'entity_manager');
 $container->setAlias(ParameterBagInterface::class, 'parameter_bag');
+
 $container->register(ChannelBuilder::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(RssGenerateCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(ChannelCreateCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
@@ -48,6 +57,18 @@ $container->register(EpisodeEditCommand::class)->setAutoconfigured(true)->setAut
 $container->register(EpisodeListCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(EpisodeShowCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(AudioFileEventListener::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
+
+$container->register('validator.validator_factory', ContainerConstraintValidatorFactory::class)->setArgument(0, new Reference('container'))->setAutowired(true)->setAutoconfigured(true)->setPublic(true);
+
+$container->register(ValidatorBuilder::class)
+    ->setPublic(true)
+    ->addMethodCall('enableAnnotationMapping')
+    ->addMethodCall('setConstraintValidatorFactory', [new Reference('validator.validator_factory')]);
+
+$container->register(ValidatorInterface::class)->setFactory([new Reference(ValidatorBuilder::class), 'getValidator']);
+$container->register(ItunesArtworkValidator::class)->setAutowired(true)->setPublic(true)->addTag('validator.constraint_validator');
+
+$container->addCompilerPass(new AddConstraintValidatorsPass());
 
 $container->setParameter('dir.root', realpath(__DIR__ . '/../'));
 $container->setParameter('dir.public', realpath(__DIR__ . '/../public'));

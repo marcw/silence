@@ -15,30 +15,19 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 abstract class EpisodeCrudCommand extends AbstractCommand
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
-    {
-        $this->entityManager = $entityManager;
-
-        parent::__construct($parameterBag);
-    }
-
     protected function ask()
     {
         $this->askForChannel('channel');
         $this->askForString('Title', 'title');
         $this->askForString('Subtitle', 'subtitle');
+        $this->askForString('Link to the episode homepage', 'link');
         $this->askForString('Description', 'description');
         $this->askForString('Author', 'author');
         $this->askForBool('Block this episode from appearing on iTunes', 'itunesBlock');
         $this->askForBool('This episode has explicit language', 'isExplicit');
         $this->askForAudioFile('file');
         $this->askForImageFile('artwork');
-        $this->askForDateTime('Date and time of publciation (Y-m-d H:i:s)', 'publishedAt');
+        $this->askForDateTime('Date and time of publication (Y-m-d H:i:s)', 'publishedAt');
     }
 
     protected function askForChannel(string $property)

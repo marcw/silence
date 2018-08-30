@@ -19,6 +19,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use MarcW\Silence\Validator\ItunesArtwork;
 
 /**
  * @ORM\Entity()
@@ -115,6 +116,7 @@ class Channel
      * @var string
      * @ORM\Column(type="string", nullable=false)
      * @Assert\NotBlank()
+     * @ItunesArtwork
      */
     private $artwork;
 
@@ -269,29 +271,6 @@ class Channel
     public function getItunesOwnerName(): ?string
     {
         return $this->itunesOwnerName;
-    }
-
-    /**
-     * @Assert\Callback
-     */
-    public function validate(ExecutionContextInterface $context)
-    {
-        if ($this->artwork) {
-            list ($width, $height) = getimagesize($this->artwork);
-            if ($width < 1400) {
-                $context
-                    ->buildViolation('Image width should be at least 1400px')
-                    ->atPath('artwork')
-                    ->addViolation();
-
-            }
-
-            if ($height < 1400) {
-                $context->buildViolation('Image height should be at least 1400px')
-                    ->atPath('artwork')
-                    ->addViolation();
-            }
-        }
     }
 
     public function setLanguage(string $language): void
