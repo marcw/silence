@@ -108,6 +108,18 @@ class Episode
     private $file;
 
     /**
+     * @var null|int
+     * @ORM\Column(type="integer", length=255, nullable=true)
+     */
+    private $filesize;
+
+    /**
+     * @var null|string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $filetype;
+
+    /**
      * @var null|\DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
@@ -265,5 +277,37 @@ class Episode
     public function setLink(?string $link): void
     {
         $this->link = $link;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getFiletype(): ?string
+    {
+        return $this->filetype;
+    }
+
+    /**
+     * @param null|string $filetype
+     */
+    public function setFiletype(?string $filetype): void
+    {
+        $this->filetype = $filetype;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getFilesize(): ?int
+    {
+        return $this->filesize;
+    }
+
+    /**
+     * @param int|null $filesize
+     */
+    public function setFilesize(?int $filesize): void
+    {
+        $this->filesize = $filesize;
     }
 }

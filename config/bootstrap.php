@@ -13,7 +13,7 @@ use MarcW\Silence\Command\EpisodeEditCommand;
 use MarcW\Silence\Command\EpisodeListCommand;
 use MarcW\Silence\Command\EpisodeShowCommand;
 use MarcW\Silence\Command\RssGenerateCommand;
-use MarcW\Silence\EventListener\AudioDurationEventListener;
+use MarcW\Silence\EventListener\AudioFileEventListener;
 use MarcW\Silence\Rss\ChannelBuilder;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -47,7 +47,7 @@ $container->register(EpisodeCreateCommand::class)->setAutoconfigured(true)->setA
 $container->register(EpisodeEditCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(EpisodeListCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(EpisodeShowCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
-$container->register(AudioDurationEventListener::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
+$container->register(AudioFileEventListener::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 
 $container->setParameter('dir.root', realpath(__DIR__ . '/../'));
 $container->setParameter('dir.public', realpath(__DIR__ . '/../public'));
@@ -58,7 +58,7 @@ $container->setParameter('base_url', 'https://podcasts.polaarsounds.com');
 $container->compile();
 $container->set('entity_manager', $entityManager);
 $container->set('parameter_bag', $container->getParameterBag());
-$entityManager->getEventManager()->addEventSubscriber($container->get(AudioDurationEventListener::class));
+$entityManager->getEventManager()->addEventSubscriber($container->get(AudioFileEventListener::class));
 
 $timestampableListener = new Gedmo\Timestampable\TimestampableListener();
 $timestampableListener->setAnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());

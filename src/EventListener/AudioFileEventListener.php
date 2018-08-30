@@ -10,7 +10,7 @@ use MarcW\Silence\Entity\Episode;
 use MarcW\Silence\Util\AudioDurationExtractor;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class AudioDurationEventListener implements EventSubscriber
+class AudioFileEventListener implements EventSubscriber
 {
     /**
      * @var ParameterBagInterface
@@ -39,6 +39,9 @@ class AudioDurationEventListener implements EventSubscriber
     {
         $publicDir = $this->parameterBag->get('dir.public');
         $path = sprintf('%s%s', $publicDir, $episode->getFile());
+
+        $episode->setFilesize(filesize($path));
+        $episode->setFiletype(mime_content_type($path));
 
         $extractor = new AudioDurationExtractor();
         $duration = $extractor->extract($path);
