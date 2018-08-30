@@ -4,6 +4,7 @@
 namespace MarcW\Silence\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Gedmo\Sluggable\Util\Urlizer;
 use MarcW\RssWriter\Extension\Atom\AtomWriter;
 use MarcW\RssWriter\Extension\Core\CoreWriter;
 use MarcW\RssWriter\Extension\DublinCore\DublinCore;
@@ -17,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class GenerateCommand extends AbstractCommand
+class RssGenerateCommand extends AbstractCommand
 {
     /**
      * @var EntityManagerInterface
@@ -38,14 +39,13 @@ class GenerateCommand extends AbstractCommand
 
     protected function configure()
     {
-        $this->setName('generate')
+        $this->setName('rss:generate')
              ->setDescription('Generate all the RSS files')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<error>Implement me!</error>');
         $channels = $this->entityManager->getRepository(Channel::class)->findAll();
 
         $writers = [
@@ -53,10 +53,10 @@ class GenerateCommand extends AbstractCommand
             new CoreWriter(),
             new ItunesWriter(),
         ];
-        $writer = new RssWriter(null, $writers);
+        $writer = new RssWriter(null, $writers, true, '    ');
         foreach ($channels as $channel) {
-            $xml = $writer->writeChannel($this->channelBuilder->fromPodcastChannel($channel));
-            file_put_contents(sprintf('%s/%s.xml', $this->parameterBag->get('dir.public'), $channel->getTitle()), $xml);
+            $xml = $writer->writeChannel($this->channelBuilder->fromPodcastChannel($channel, $channel->getEpisodes()));
+            file_put_contents(sprintf('%s/%s.xml', $this->parameterBag->get('dir.public'), Urlizer::urlize($channel->getTitle())), $xml);
         }
     }
 }

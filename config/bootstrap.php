@@ -12,7 +12,9 @@ use MarcW\Silence\Command\EpisodeCreateCommand;
 use MarcW\Silence\Command\EpisodeEditCommand;
 use MarcW\Silence\Command\EpisodeListCommand;
 use MarcW\Silence\Command\EpisodeShowCommand;
+use MarcW\Silence\Command\RssGenerateCommand;
 use MarcW\Silence\EventListener\AudioDurationEventListener;
+use MarcW\Silence\Rss\ChannelBuilder;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -35,6 +37,8 @@ $container->register('entity_manager', EntityManagerInterface::class)->setSynthe
 $container->register('parameter_bag', ParameterBagInterface::class)->setSynthetic(true)->setPublic(true);
 $container->setAlias(EntityManagerInterface::class, 'entity_manager');
 $container->setAlias(ParameterBagInterface::class, 'parameter_bag');
+$container->register(ChannelBuilder::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
+$container->register(RssGenerateCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(ChannelCreateCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(ChannelEditCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
 $container->register(ChannelListCommand::class)->setAutoconfigured(true)->setAutowired(true)->setPublic(true);
@@ -55,3 +59,7 @@ $container->compile();
 $container->set('entity_manager', $entityManager);
 $container->set('parameter_bag', $container->getParameterBag());
 $entityManager->getEventManager()->addEventSubscriber($container->get(AudioDurationEventListener::class));
+
+$timestampableListener = new Gedmo\Timestampable\TimestampableListener();
+$timestampableListener->setAnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
+$entityManager->getEventManager()->addEventSubscriber($timestampableListener);

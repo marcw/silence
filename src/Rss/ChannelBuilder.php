@@ -14,6 +14,8 @@ namespace MarcW\Silence\Rss;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Inflector\Inflector;
+use Gedmo\Mapping\Annotation\Slug;
+use Gedmo\Sluggable\Util\Urlizer;
 use MarcW\Silence\Entity\Channel;
 use MarcW\Silence\Entity\Episode;
 use MarcW\RssWriter\Extension\Atom\AtomLink;
@@ -114,7 +116,7 @@ class ChannelBuilder
         $channel->addExtension($itunesChannel);
 
         $channel->addExtension((new AtomLink())->setRel('self')->setHref(
-            $this->generateUrl(sprintf('%s.rss', $podcast->getTitle())))
+            $this->generateUrl(sprintf('%s.rss', Urlizer::urlize($podcast->getTitle()))))
         );
 
         return $channel;

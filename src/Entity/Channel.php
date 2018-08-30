@@ -15,6 +15,7 @@ namespace MarcW\Silence\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -25,6 +26,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 class Channel
 {
+    use TimestampableEntity;
+
     /**
      * @ORM\Id()
      * @ORM\Column(type="string", length=36, nullable=false)
@@ -73,7 +76,7 @@ class Channel
     /**
      * @var Collection
      * @ORM\OneToMany(targetEntity="Episode", mappedBy="channel")
-     * @ORM\OrderBy({"createdAt"="DESC"})
+     * @ORM\OrderBy("publishedAt")
      */
     private $episodes;
 

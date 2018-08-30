@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace MarcW\Silence\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -21,6 +22,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Episode
 {
+    use TimestampableEntity;
+
     /**
      * @ORM\Id()
      * @ORM\Column(type="string", length=36, nullable=false)
@@ -113,6 +116,7 @@ class Episode
     public function __construct()
     {
         $this->id = Uuid::uuid4()->toString();
+        $this->publishedAt = new \DateTime();
     }
 
     public function setTitle(string $title): void
@@ -148,7 +152,6 @@ class Episode
     public function setFile(string $file): void
     {
         $this->file = $file;
-//        $this->setDuration(DurationConverter::toHumanReadable($file->getPublicMetadataValue('duration')));
     }
 
     public function getFile(): ?string
@@ -166,12 +169,12 @@ class Episode
         return $this->author;
     }
 
-    public function setDuration(string $duration): void
+    public function setDuration(int $duration): void
     {
         $this->duration = $duration;
     }
 
-    public function getDuration(): ?string
+    public function getDuration(): ?int
     {
         return $this->duration;
     }

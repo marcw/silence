@@ -10,7 +10,7 @@ require_once __DIR__.'/config/bootstrap.php';
 
 $application = new Application();
 
-$application->add(new \MarcW\Silence\Command\GenerateCommand());
+$application->add($container->get(\MarcW\Silence\Command\RssGenerateCommand::class));
 $application->add($container->get(\MarcW\Silence\Command\ChannelCreateCommand::class));
 $application->add($container->get(\MarcW\Silence\Command\ChannelListCommand::class));
 $application->add($container->get(\MarcW\Silence\Command\ChannelShowCommand::class));
