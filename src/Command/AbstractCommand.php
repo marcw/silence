@@ -34,7 +34,7 @@ abstract class AbstractCommand extends Command
     /** @var SymfonyQuestionHelper  */
     protected $questionHelper;
     /** * @var ParameterBagInterface */
-    private $parameterBag;
+    protected $parameterBag;
 
     public function __construct(ParameterBagInterface $parameterBag, ?string $name = null)
     {

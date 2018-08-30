@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace MarcW\Silence\Rss;
 
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Inflector\Inflector;
 use MarcW\Silence\Entity\Channel;
 use MarcW\Silence\Entity\Episode;
 use MarcW\RssWriter\Extension\Atom\AtomLink;
@@ -23,16 +24,25 @@ use MarcW\RssWriter\Extension\Core\Item;
 use MarcW\RssWriter\Extension\Itunes\ItunesChannel;
 use MarcW\RssWriter\Extension\Itunes\ItunesItem;
 use MarcW\RssWriter\Extension\Itunes\ItunesOwner;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use MarcW\Silence\Util\DurationConverter;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ChannelBuilder
 {
-    /** @var UrlGeneratorInterface */
-    private $router;
-
-    public function __construct(UrlGeneratorInterface $router)
+    public function __construct(ParameterBagInterface $parameterBag)
     {
-        $this->router = $router;
+        $this->baseUrl = $parameterBag->get('base_url');
+        $this->publicDir = $parameterBag->get('dir.public');
+    }
+
+    private function generateUrl($path): string
+    {
+        return sprintf('%s/%s', rtrim($this->baseUrl, '/'), ltrim($path, '/'));
+    }
+
+    private function getFilePath($path): string
+    {
+        return sprintf('%s/%s', rtrim($this->publicDir, '/'), ltrim($path, '/'));
     }
 
     /**
@@ -45,10 +55,11 @@ class ChannelBuilder
         $channel = new RssChannel();
         $channel->setTitle($podcast->getTitle());
         $channel->setDescription($podcast->getDescription());
-        $channel->setLink($this->router->generate('podcast_channels_listen', ['id' => $podcast->getId()], UrlGeneratorInterface::ABSOLUTE_URL));
+        $channel->setLink($podcast->getLink());
         $channel->setCopyright($podcast->getCopyright());
-        $channel->setGenerator('https://www.audiencehero.org');
+        $channel->setGenerator('https://github.com/marcw/silence');
         $channel->setLastBuildDate(new \DateTime());
+
         $itunesChannel = new ItunesChannel();
         $itunesChannel->setSubtitle($podcast->getSubtitle());
         $itunesChannel->setSummary($podcast->getDescription());
@@ -61,13 +72,7 @@ class ChannelBuilder
         }
 
         if ($podcast->getArtwork()) {
-            $artwork = $podcast->getArtwork();
-            $size = $artwork->getImageWidth() >= $artwork->getImageHeight() ? '0x1500' : '1500x0';
-            $itunesChannel->setImage($this->router->generate('audience_hero_img_show_alt', [
-                'url' => urlencode($artwork->getRemoteUrl()),
-                'crop' => 'square-center',
-                'size' => $size,
-            ], UrlGeneratorInterface::ABSOLUTE_URL));
+            $itunesChannel->setImage($this->generateUrl($podcast->getArtwork()));
         }
 
         if ($podcast->getCategory()) {
@@ -78,11 +83,18 @@ class ChannelBuilder
         foreach ($episodes as $episode) {
             $item = new Item();
             $item->setTitle($episode->getTitle());
-            $item->setLink($this->router->generate('podcast_episodes_listen', ['id' => $podcast->getId(), 'episodeId' => $episode->getId()], UrlGeneratorInterface::ABSOLUTE_URL));
+            $item->setLink($episode->getLink());
             $item->setDescription($episode->getDescription());
             $item->setAuthor($episode->getAuthor());
-            $enclosureUrl = $this->router->generate('podcast_episodes_enclosure', ['id' => $episode->getId(), 'extension' => $episode->getFile()->getExtension()], UrlGeneratorInterface::ABSOLUTE_URL);
-            $item->setEnclosure((new Enclosure())->setUrl($enclosureUrl)->setLength($episode->getFile()->getSize())->setType($episode->getFile()->getContentType()));
+            $enclosureUrl = $this->generateUrl($episode->getFile());
+
+            // TODO Populate file size and mime-type during File selection
+            $item->setEnclosure((new Enclosure())
+                 ->setUrl($enclosureUrl)
+                 ->setLength(filesize($this->getFilePath($episode->getFile())))
+                 ->setType('audio/mp3'))
+            ;
+
             $item->setGuid((new Guid())->setIsPermaLink(true)->setGuid($item->getLink()));
             $item->setPubDate($episode->getPublishedAt());
             $itunesItem = new ItunesItem();
@@ -90,23 +102,21 @@ class ChannelBuilder
             $itunesItem->setAuthor($episode->getAuthor());
             $itunesItem->setBlock($episode->getItunesBlock());
             if ($episode->getArtwork()) {
-                $artwork = $episode->getArtwork();
-                $size = $artwork->getImageWidth() >= $artwork->getImageHeight() ? '0x1500' : '1500x0';
-                $itunesItem->setImage($this->router->generate('audience_hero_img_show_alt', [
-                    'url' => urlencode($artwork->getRemoteUrl()),
-                    'crop' => 'square-center',
-                    'size' => $size,
-                ], UrlGeneratorInterface::ABSOLUTE_URL));
+                $itunesItem->setImage($this->generateUrl($episode->getArtwork()));
             }
             $itunesItem->setExplicit($episode->isExplicit());
             $itunesItem->setSubtitle($episode->getSubtitle());
-            $itunesItem->setDuration(DurationConverter::toHumanReadable($episode->getFile()->getPublicMetadataValue('duration')));
+            $itunesItem->setDuration(DurationConverter::toHumanReadable($episode->getDuration()));
             $itunesItem->setSummary($episode->getDescription());
             $channel->addItem($item);
         }
         $channel->setLanguage($podcast->getLanguage());
         $channel->addExtension($itunesChannel);
-        $channel->addExtension((new AtomLink())->setRel('self')->setHref($this->router->generate('podcast_channels_feed', ['id' => $podcast->getId()], UrlGeneratorInterface::ABSOLUTE_URL)));
+
+        $channel->addExtension((new AtomLink())->setRel('self')->setHref(
+            $this->generateUrl(sprintf('%s.rss', $podcast->getTitle())))
+        );
+
         return $channel;
     }
 }

@@ -37,6 +37,15 @@ class Episode
 
     /**
      * @var null|string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Length(max=255)
+     * @Assert\NotBlank()
+     * @Assert\Url()
+     */
+    private $link;
+
+    /**
+     * @var null|string
      * @ORM\Column(type="string", length=255, nullable=false)
      * @Assert\Length(max=255)
      * @Assert\NotBlank
@@ -78,13 +87,13 @@ class Episode
 
     /**
      * @var string
-     * @ORM\Column(type="boolean", nullable=false)
+     * @ORM\Column(type="string", nullable=false)
      */
     private $artwork;
 
     /**
      * @var null|string
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $duration;
 
@@ -197,16 +206,6 @@ class Episode
         return $this->itunesBlock;
     }
 
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): void
-    {
-        $this->slug = $slug;
-    }
-
     public function setPublishedAt(?\DateTime $publishedAt): void
     {
         $this->publishedAt = $publishedAt;
@@ -247,5 +246,21 @@ class Episode
     public function setId(string $id): void
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param null|string $link
+     */
+    public function setLink(?string $link): void
+    {
+        $this->link = $link;
     }
 }

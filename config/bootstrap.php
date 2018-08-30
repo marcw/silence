@@ -48,7 +48,7 @@ $container->register(AudioDurationEventListener::class)->setAutoconfigured(true)
 $container->setParameter('dir.root', realpath(__DIR__ . '/../'));
 $container->setParameter('dir.public', realpath(__DIR__ . '/../public'));
 $container->setParameter('dir.private', realpath(__DIR__.'/../private'));
-
+$container->setParameter('base_url', 'https://podcasts.polaarsounds.com');
 
 // Compile the container
 $container->compile();

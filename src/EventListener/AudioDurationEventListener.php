@@ -4,10 +4,10 @@
 namespace MarcW\Silence\EventListener;
 
 
-use AudienceHero\Bundle\FileBundle\ETL\Extractor\AudioDurationExtractor;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use MarcW\Silence\Entity\Episode;
+use MarcW\Silence\Util\AudioDurationExtractor;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class AudioDurationEventListener implements EventSubscriber

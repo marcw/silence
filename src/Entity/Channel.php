@@ -48,6 +48,15 @@ class Channel
 
     /**
      * @var null|string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Length(max=255)
+     * @Assert\NotBlank()
+     * @Assert\Url()
+     */
+    private $link;
+
+    /**
+     * @var null|string
      * @ORM\Column(type="string", length=4000, nullable=true)
      * @Assert\Length(max=4000)
      * @Assert\NotBlank
@@ -314,5 +323,21 @@ class Channel
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param null|string $link
+     */
+    public function setLink(?string $link): void
+    {
+        $this->link = $link;
     }
 }

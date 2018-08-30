@@ -23,7 +23,7 @@ use Symfony\Component\Process\Process;
  */
 class AudioDurationExtractor
 {
-    public function extract(string $in)
+    public function extract(string $in): ?int
     {
         $process = new Process(['soxi', '-D', $in]);
         $process->run();
@@ -32,6 +32,6 @@ class AudioDurationExtractor
             return null;
         }
 
-        return round($process->getOutput());
+        return (int) round($process->getOutput());
     }
 }
